@@ -1,0 +1,144 @@
+10
+
+dir
+17442
+svn://192.168.2.163/rtl8196b_11n/trunk/sdk-store/rtl819x-sdk-v2.5/rtl819x/users/samba-3.0.37/docs-xml/smbdotconf
+svn://192.168.2.163/rtl8196b_11n
+
+
+
+2011-10-25T07:24:11.876731Z
+10646
+linxiaobin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5573724e-50af-47a2-85db-7cc79d6d1019
+
+wins
+dir
+
+filename
+dir
+
+ldap
+dir
+
+generate-context.xsl
+file
+
+
+
+
+2013-11-10T13:32:16.000000Z
+5b89b792994865753ddf0e846d88aaaf
+2011-10-25T07:24:11.876731Z
+10646
+linxiaobin
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1629
+
+locking
+dir
+
+logging
+dir
+
+generate-file-list.sh
+file
+
+
+
+
+2013-11-10T13:32:16.000000Z
+c75366320a583bf2b7f50897dfe11e86
+2011-10-25T07:24:11.876731Z
+10646
+linxiaobin
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+308
+
+winbind
+dir
+
+printing
+dir
+
+misc
+dir
+
+vfs
+dir
+
+browse
+dir
+
+protocol
+dir
+
+tuning
+dir
+
+security
+dir
+
+domain
+dir
+
+base
+dir
+
+logon
+dir
+

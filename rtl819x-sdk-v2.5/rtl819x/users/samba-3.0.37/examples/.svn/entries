@@ -1,0 +1,153 @@
+10
+
+dir
+17442
+svn://192.168.2.163/rtl8196b_11n/trunk/sdk-store/rtl819x-sdk-v2.5/rtl819x/users/samba-3.0.37/examples
+svn://192.168.2.163/rtl8196b_11n
+
+
+
+2011-10-25T07:24:11.876731Z
+10646
+linxiaobin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5573724e-50af-47a2-85db-7cc79d6d1019
+
+validchars
+dir
+
+LDAP
+dir
+
+pcap2nbench
+dir
+
+scripts
+dir
+
+pam_winbind
+dir
+
+smb.conf.default
+file
+
+
+
+
+2013-11-10T13:32:47.000000Z
+e9cc3ef6285bbd6c9f15bf391d5d0467
+2011-10-25T07:24:11.876731Z
+10646
+linxiaobin
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9683
+
+printing
+dir
+
+misc
+dir
+
+perfcounter
+dir
+
+README
+file
+
+
+
+
+2013-11-10T13:32:47.000000Z
+e8871d1abe57c975e12aabfa676035ae
+2011-10-25T07:24:11.876731Z
+10646
+linxiaobin
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+278
+
+VFS
+dir
+
+auth
+dir
+
+autofs
+dir
+
+nss
+dir
+
+pdb
+dir
+
+dce-dfs
+dir
+
+libsmbclient
+dir
+
+printer-accounting
+dir
+
+libmsrpc
+dir
+
+logon
+dir
+
+tridge
+dir
+

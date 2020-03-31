@@ -1,0 +1,1718 @@
+Index: goahead-2.1.1/web-gw/wlwps.asp
+===================================================================
+--- goahead-2.1.1/web-gw/wlwps.asp	(revision 20709)
++++ goahead-2.1.1/web-gw/wlwps.asp	(working copy)
+@@ -41,8 +41,6 @@
+ var mode_rpt=<% write(getIndex("wlanMode_rpt"));%>; //AP_MODE=0, CLIENT_MODE=1, WDS_MODE=2, AP_WDS_MODE=3, AP_MPP_MODE=4, MPP_MODE=5, MAP_MODE=6, MP_MODE=7
+ var is_adhoc_rpt=<% write(getIndex("networkType_rpt"));%>; //INFRASTRUCTURE=0, ADHOC=1
+ 
+-//WPS2DOTX for brute force attack unlock
+-var autolockdown_stat=<% write(getIndex("lockdown_stat"));%>;
+ 
+ var warn_msg1='WPS was disabled automatically because wireless mode setting could not be supported. ' +
+ 				'You need go to Wireless/Basic page to modify settings to enable WPS.';
+@@ -57,12 +55,6 @@
+   	return true;
+ }
+ 
+-// WPS2DOTX , for brute force attack unlock
+-function unlockdownClicked()
+-{	
+-	return true;
+-}
+-
+ function triggerPINClicked()
+ {
+ 	return(saveChangesWPS(document.formWsc));	
+@@ -80,8 +72,6 @@
+ 	document.forms["formWsc"].submit();	
+ }
+ 
+-
+-
+ function compute_pin_checksum(val)
+ {
+ 	var accum = 0;	
+@@ -201,12 +191,6 @@
+ 
+ function checkWPSstate(form, isClientChk, isRptChk)
+ {
+-//WPS2DOTX for brute force attack unlock
+-	if (autolockdown_stat) {
+-		enableButton(form.elements["unlockautolockdown"]);		
+-	}else{
+-		disableButton(form.elements["unlockautolockdown"]);
+-	}  
+ 	if (disable_all) {
+ 		disableCheckBox(form.elements["disableWPS"]);
+ 		disableButton(form.elements["save"]);
+@@ -404,28 +388,7 @@
+ 	document.write("<table border=\"0\" width=500>\n");
+   }
+ </script>
+-
+-<!--WPS2DOTX for brute force attack unlock -->
+ <tr>
+-  <td width="40%"><font size="2"><b>Auto-lock-down state:
+-<script>
+-  if (autolockdown_stat) {
+-	document.write("locked");
+-  }else{
+-	document.write("unlocked");  
+-  }
+-</script> 
+-  </b></font></td>    
+-  <td width="60%"><font size="2">  	
+-  	<input type="submit" value="Unlock" name="unlockautolockdown" onClick="return unlockdownClicked()">
+-	</font></td>  
+-</tr>
+-<script>
+-   checkWPSstate(document.formWsc, 0, 0);
+-</script>
+-<!--WPS2DOTX for brute force attack unlock --> 
+-
+-<tr>
+   <td width="40%"><font size="2"><b>Self-PIN Number:</b></font></td>
+   <td width="60%"><font size="2"><% getInfo("wscLoocalPin");%></td>
+ </tr>
+@@ -642,6 +605,9 @@
+   	<input type="submit" value="Start PBC" name="triggerRptPBC" onClick="return triggerPBCClicked()"></td>
+ 	</font></td>  
+ </tr>
++
++
++
+  <script>
+ if (isRptClient)
+ 	document.write("<span id = \"hide_div\" class = \"off\">\n");
+@@ -659,6 +625,9 @@
+ 	document.write("</span>\n");
+    checkWPSstate(document.formWsc, 0, 1);
+ </script>
++  
++
++
+  <script>
+  	if (disable_all) {
+ 		 document.write("<tr><td colspan=\"2\" height=\"55\"><font size=2><em>");
+@@ -671,6 +640,7 @@
+ </script>   	
+ 
+ <script>
++   		
+ 	if (isRptClient || !isRptConfig)
+ 		document.write("<span id = \"hide_div\" class = \"off\">\n");
+ </script>
+Index: goahead-2.1.1/LINUX/system/sysconf.c
+===================================================================
+--- goahead-2.1.1/LINUX/system/sysconf.c	(revision 20709)
++++ goahead-2.1.1/LINUX/system/sysconf.c	(working copy)
+@@ -270,7 +270,11 @@
+ 			if(SetWlan_idx(wlanif))
+ 			{
+ 				
++#if defined(CONFIG_RTL_92D_SUPPORT) && defined(CONFIG_RTL_92D_DMDP) && !defined(CONFIG_RTL_DUAL_PCIESLOT_BIWLAN_D) 
+ 				intVal = DMACDPHY;
++#else
++				intVal = SMACSPHY;
++#endif
+ 				apmib_set(MIB_WLAN_MAC_PHY_MODE, (void *)&intVal);
+ 				intVal = 0;
+ 				apmib_set(MIB_WLAN_WLAN_DISABLED, (void *)&intVal);
+Index: goahead-2.1.1/LINUX/fmwlan.c
+===================================================================
+--- goahead-2.1.1/LINUX/fmwlan.c	(revision 20709)
++++ goahead-2.1.1/LINUX/fmwlan.c	(working copy)
+@@ -2023,7 +2023,11 @@
+ 		if(SetWlan_idx(wlanif))
+ 		{
+ 			int intVal;
++#if defined(CONFIG_RTL_92D_SUPPORT) && defined(CONFIG_RTL_92D_DMDP) && !defined(CONFIG_RTL_DUAL_PCIESLOT_BIWLAN_D) 
+ 			intVal = DMACDPHY;
++#else
++			intVal = SMACSPHY;
++#endif
+ 			apmib_set(MIB_WLAN_MAC_PHY_MODE, (void *)&intVal);
+ 			intVal = 1;
+ 			apmib_set(MIB_WLAN_WLAN_DISABLED, (void *)&intVal);
+@@ -2100,7 +2104,11 @@
+ 			if(SetWlan_idx(wlanif))
+ 			{
+ 				int intVal;
++#if defined(CONFIG_RTL_92D_SUPPORT) && defined(CONFIG_RTL_92D_DMDP) && !defined(CONFIG_RTL_DUAL_PCIESLOT_BIWLAN_D) 
+ 				intVal = DMACDPHY;
++#else
++				intVal = SMACSPHY;
++#endif
+ 				apmib_set(MIB_WLAN_MAC_PHY_MODE, (void *)&intVal);
+ 				intVal = 0;
+ 				apmib_set(MIB_WLAN_WLAN_DISABLED, (void *)&intVal);
+@@ -7000,18 +7008,14 @@
+ 		apmib_get(MIB_WLAN_WPA2_CIPHER_SUITE, (void *)&iVal);
+ 		if (!(iVal &	WPA_CIPHER_AES)) {
+ 			if (encrypt1 &	WPA_CIPHER_AES) {			
+-				//auth = WSC_AUTH_WPAPSK;
++				auth = WSC_AUTH_WPAPSK;
+ 				encrypt2 = WSC_ENCRYPT_AES;	
+ 			}
+-			else{
++			else
+ 				encrypt2 = WSC_ENCRYPT_TKIP;	
+-			}
+ 		}
+ //-------------------------------------------- david+2008-01-03
+-		if(encrypt1==WPA_CIPHER_AES && iVal ==WPA_CIPHER_AES){
+-			encrypt2 = WSC_ENCRYPT_AES;	
+-			printf("%s %d\n",__FUNCTION__,__LINE__);			
+-		}
++
+ 	}
+ 	apmib_set(MIB_WLAN_WSC_AUTH, (void *)&auth);
+ 	apmib_set(MIB_WLAN_WSC_ENC, (void *)&encrypt2);
+@@ -7199,8 +7203,6 @@
+ {
+ 	char_t *strVal, *submitUrl, *strResetUnCfg, *wlanIf;
+ 	char_t  *targetAPSsid, *targetAPMac; /* WPS2DOTX */
+-	/*WPS2DOTX ;check if unlock button be clicked ; brute force attack */
+-	char_t  *unlockclicked;
+ 	int intVal;
+ 	char tmpbuf[200];
+ 	int mode;
+@@ -7347,18 +7349,6 @@
+ 	}
+ #endif //#if defined(UNIVERSAL_REPEATER) && defined(CONFIG_REPEATER_WPS_SUPPORT)
+ 
+-
+-	/*WPS2DOTX ;check if unlock button be clicked ; brute force attack */
+-	unlockclicked = websGetVar(wp, T("unlockautolockdown"), T(""));
+-	if(unlockclicked[0])
+-	{
+-		//printf("[%s %d]issue cmd:\"wscd -sig_unlock wlan0\" \n",__FUNCTION__,__LINE__);	
+-		system("wscd -sig_unlock wlan0");	
+-		OK_MSG2(UNLOCK_MSG, ((mode==AP_MODE) ? "client" : "AP"), submitUrl);	
+-		return;
+-	}
+-	/*WPS2DOTX ;check if unlock button be clicked ; brute force attack */
+-
+ 	apmib_get(MIB_WLAN_MODE, (void *)&mode);	
+ 	strVal = websGetVar(wp, T("triggerPBC"), T(""));
+ 	if (strVal[0]) {
+@@ -7375,11 +7365,18 @@
+ 		}
+ 		else {		
+ #ifndef NO_ACTION	
+-
++#if defined(FOR_DUAL_BAND)
++				if( (wlan0_mode == 0) && (wlan1_mode == 0) && (wlan0_disable == 0) && (wlan1_disable == 0))
++						sprintf(tmpbuf, "%s -sig_pbc %s", _WSC_DAEMON_PROG, "wlan0-wlan1");
++				else 
+ 						sprintf(tmpbuf, "%s -sig_pbc wlan%d", _WSC_DAEMON_PROG,wlan_idx);
+ 				system(tmpbuf);
++#else
+ 
++				sprintf(tmpbuf, "%s -sig_pbc wlan%d", _WSC_DAEMON_PROG,wlan_idx);
++				system(tmpbuf);
+ #endif
++#endif
+ 		}
+ 		OK_MSG2(START_PBC_MSG, ((mode==AP_MODE) ? "client" : "AP"), submitUrl);
+ 		return;
+@@ -7493,11 +7490,16 @@
+ 					
+ 				}				
+ 				/* support  special SSID , 2011-0505 WPS2DOTX */
+-
++#if defined(FOR_DUAL_BAND)
++				if( (wlan0_mode == 0) && (wlan1_mode == 0) && (wlan0_disable == 0) && (wlan1_disable == 0))
++						sprintf(tmpbuf, "%s -sig_start %s", _WSC_DAEMON_PROG, "wlan0-wlan1");
++				else 
+ 						sprintf(tmpbuf, "%s -sig_start wlan%d", _WSC_DAEMON_PROG,wlan_idx);
+ 				system(tmpbuf);
+-
+-
++#else
++				sprintf(tmpbuf, "%s -sig_start wlan%d", _WSC_DAEMON_PROG,wlan_idx);
++				system(tmpbuf);
++#endif
+ 			}			
+ #endif
+ 		}
+Index: goahead-2.1.1/LINUX/fmmgmt.c
+===================================================================
+--- goahead-2.1.1/LINUX/fmmgmt.c	(revision 20709)
++++ goahead-2.1.1/LINUX/fmmgmt.c	(working copy)
+@@ -2437,7 +2437,11 @@
+ 			if(SetWlan_idx(wlanif))
+ 			{
+ 				int intVal;
++#if defined(CONFIG_RTL_92D_SUPPORT) && defined(CONFIG_RTL_92D_DMDP) && !defined(CONFIG_RTL_DUAL_PCIESLOT_BIWLAN_D) 
+ 				intVal = DMACDPHY;
++#else
++				intVal = SMACSPHY;
++#endif
+ 				apmib_set(MIB_WLAN_MAC_PHY_MODE, (void *)&intVal);
+ 				intVal = 0;
+ 				apmib_set(MIB_WLAN_WLAN_DISABLED, (void *)&intVal);
+@@ -2767,7 +2771,11 @@
+ 			if(SetWlan_idx(wlanif))
+ 			{
+ 				int intVal;
++#if defined(CONFIG_RTL_92D_SUPPORT) && defined(CONFIG_RTL_92D_DMDP) && !defined(CONFIG_RTL_DUAL_PCIESLOT_BIWLAN_D) 
+ 				intVal = DMACDPHY;
++#else
++				intVal = SMACSPHY;
++#endif
+ 				apmib_set(MIB_WLAN_MAC_PHY_MODE, (void *)&intVal);				
+ 			}						
+ 		}
+Index: goahead-2.1.1/LINUX/fmget.c
+===================================================================
+--- goahead-2.1.1/LINUX/fmget.c	(revision 20709)
++++ goahead-2.1.1/LINUX/fmget.c	(working copy)
+@@ -4306,22 +4306,6 @@
+ #endif
+ 		return 0;
+ 	}
+-	else if ( !strcmp(name, T("lockdown_stat"))) {	/* WPS2DOTX for brute force attack mitigation;unlock*/
+-
+-		#define WSCD_LOCK_STAT		("/tmp/wscd_lock_stat")
+-
+-		struct stat lockdown_status;
+-		if (stat(WSCD_LOCK_STAT, &lockdown_status) == 0) {
+-			//printf("[%s %d] %s exist\n",__FUNCTION__,__LINE__,WSCD_LOCK_STAT);
+-			val=1;
+-		}else{
+-			val=0;
+-		}
+-		
+-		sprintf(buffer, "%d", val);
+-		ejSetResult(eid, buffer);
+-		return 0;
+-	}/* WPS2DOTX support*/
+ 	else if ( !strcmp(name, T("iappDisabled"))) {
+ 		if ( !apmib_get( MIB_WLAN_IAPP_DISABLED, (void *)&val) )
+ 			return -1;
+Index: goahead-2.1.1/LINUX/apform.h
+===================================================================
+--- goahead-2.1.1/LINUX/apform.h	(revision 20709)
++++ goahead-2.1.1/LINUX/apform.h	(working copy)
+@@ -258,9 +258,6 @@
+ 	"You have to run Wi-Fi Protected Setup within 2 minutes."
+ #define STOP_MSG \
+ 	"Applied WPS STOP successfully!<br>"
+-/*for WPS2DOTX brute force attack , unlock*/
+-#define UNLOCK_MSG \
+-	"Applied WPS unlock successfully!<br>"	
+ #endif
+ 
+ 
+Index: goahead-2.1.1/LINUX/flash.c
+===================================================================
+--- goahead-2.1.1/LINUX/flash.c	(revision 20709)
++++ goahead-2.1.1/LINUX/flash.c	(working copy)
+@@ -40,7 +40,6 @@
+ extern int dumpCfgFile(char *ifname, struct wifi_mib *pmib);
+ #endif
+ 
+-#define APPDEBUG(fmt,args...) printf("%s %d;"fmt,__FILE__,__LINE__,## args)
+ /* Constand definitions */
+ #define DEC_FORMAT	("%d")
+ #define BYTE5_FORMAT	("%02x%02x%02x%02x%02x")
+@@ -8579,20 +8578,7 @@
+ 	int wlan1_wsc_disabled=0;		
+ 	
+ 	// WPS2DOTX
+-	/*for detial mixed mode info*/ 	
+-#define WSC_WPA_TKIP		1
+-#define WSC_WPA_AES			2
+-#define WSC_WPA2_TKIP		4
+-#define WSC_WPA2_AES		8
+ 	
+-	int wlan0_encrypt=0;		
+-	int wlan0_wpa_cipher=0;
+-	int wlan0_wpa2_cipher=0;
+-	int wlan1_encrypt=0;		
+-	int wlan1_wpa_cipher=0;
+-	int wlan1_wpa2_cipher=0;	
+-	/*for detial mixed mode info*/ 
+-
+ 	int band_select_5g2g;  // 0:2.4g  ; 1:5G   ; 2:both
+ 	
+ 	//printf("\r\n wlanif_name=[%s],__[%s-%u]\r\n",wlanif_name,__FILE__,__LINE__);	
+@@ -8625,6 +8611,10 @@
+ 	apmib_get(MIB_WLAN_BAND2G5G_SELECT, (void *)&band_select_5g2g);	
+ 	
+ 	
++	if(wlanif_name != NULL)
++	{
++		SetWlan_idx(wlanif_name);
++	}
+ 	apmib_get(MIB_WLAN_WSC_AUTH, (void *)&wsc_auth);
+ 	apmib_get(MIB_WLAN_WSC_ENC, (void *)&wsc_enc);
+ 	apmib_get(MIB_WLAN_WSC_CONFIGURED, (void *)&is_config);
+@@ -8647,17 +8637,10 @@
+ 	apmib_get(MIB_WLAN_WPA_PSK, (void *)&wlan_wpa_psk);
+ 	apmib_get(MIB_WLAN_WSC_DISABLE, (void *)&wlan0_wsc_disabled);	// 1104
+ 	apmib_get(MIB_WLAN_WLAN_DISABLED, (void *)&wlan0_wlan_disabled);	// 0908	
+-
+-	/*for detial mixed mode info*/ 
+-	apmib_get(MIB_WLAN_ENCRYPT, (void *)&wlan0_encrypt);
+-	apmib_get(MIB_WLAN_WPA_CIPHER_SUITE, (void *)&wlan0_wpa_cipher);
+-	apmib_get(MIB_WLAN_WPA2_CIPHER_SUITE, (void *)&wlan0_wpa2_cipher);
+-	/*for detial mixed mode info*/ 
+-
++	
+ 	/* for dual band*/ 	
+-	if(wlan0_wlan_disabled ){
++	if(wlan0_wlan_disabled )
+ 		wlan0_wsc_disabled=1 ; // if wlan0 interface is disabled ; 
+-	}
+ 	/* for dual band*/ 	
+ 
+ 		
+@@ -8756,28 +8739,6 @@
+ 	
+ 	WRITE_WSC_PARAM(ptr, tmpbuf, "encrypt_type = %d\n", wsc_enc);
+ 
+-	/*for detial mixed mode info*/ 
+-	intVal=0;	
+-	if(wlan0_encrypt==6){	// mixed mode
+-		if(wlan0_wpa_cipher==1){
+-			intVal |= WSC_WPA_TKIP;
+-		}else if(wlan0_wpa_cipher==2){
+-			intVal |= WSC_WPA_AES;		
+-		}else if(wlan0_wpa_cipher==3){
+-			intVal |= (WSC_WPA_TKIP | WSC_WPA_AES);		
+-		}
+-		if(wlan0_wpa2_cipher==1){
+-			intVal |= WSC_WPA2_TKIP;
+-		}else if(wlan0_wpa2_cipher==2){
+-			intVal |= WSC_WPA2_AES;		
+-		}else if(wlan0_wpa2_cipher==3){
+-			intVal |= (WSC_WPA2_TKIP | WSC_WPA2_AES);		
+-		}		
+-	}
+-	WRITE_WSC_PARAM(ptr, tmpbuf, "mixedmode = %d\n", intVal);	
+-	//printf("[%s %d],mixedmode = 0x%02x\n", __FUNCTION__,__LINE__,intVal);	
+-	/*for detial mixed mode info*/ 
+-
+ 	if (wsc_enc == WSC_ENCRYPT_WEP)
+ 		is_wep = 1;
+ 
+@@ -8918,12 +8879,6 @@
+ 	apmib_get(MIB_WLAN_WPA_PSK, (void *)&wlan_wpa_psk);
+ 	apmib_get(MIB_WLAN_WSC_DISABLE, (void *)&wlan1_wsc_disabled);	// 1104
+ 	apmib_get(MIB_WLAN_WLAN_DISABLED, (void *)&wlan1_wlan_disabled);	// 0908	
+-
+-	/*for detial mixed mode info*/ 
+-	apmib_get(MIB_WLAN_ENCRYPT, (void *)&wlan1_encrypt);
+-	apmib_get(MIB_WLAN_WPA_CIPHER_SUITE, (void *)&wlan1_wpa_cipher);
+-	apmib_get(MIB_WLAN_WPA2_CIPHER_SUITE, (void *)&wlan1_wpa2_cipher);
+-	/*for detial mixed mode info*/ 
+ 	
+ 	/* for dual band*/ 	
+ 	if(wlan1_wlan_disabled)
+@@ -8935,29 +8890,7 @@
+ 	WRITE_WSC_PARAM(ptr, tmpbuf, "auth_type2 = %d\n", wsc_auth);
+ 	WRITE_WSC_PARAM(ptr, tmpbuf, "encrypt_type2 = %d\n", wsc_enc);
+ 
+-	/*for detial mixed mode info*/ 
+-	intVal=0;	
+-	if(wlan1_encrypt==6){	// mixed mode
+-		if(wlan1_wpa_cipher==1){
+-			intVal |= WSC_WPA_TKIP;
+-		}else if(wlan1_wpa_cipher==2){
+-			intVal |= WSC_WPA_AES;		
+-		}else if(wlan1_wpa_cipher==3){
+-			intVal |= (WSC_WPA_TKIP | WSC_WPA_AES);		
+-		}
+-		if(wlan1_wpa2_cipher==1){
+-			intVal |= WSC_WPA2_TKIP;
+-		}else if(wlan1_wpa2_cipher==2){
+-			intVal |= WSC_WPA2_AES;		
+-		}else if(wlan1_wpa2_cipher==3){
+-			intVal |= (WSC_WPA2_TKIP | WSC_WPA2_AES);		
+-		}		
+-	}
+-	WRITE_WSC_PARAM(ptr, tmpbuf, "mixedmode2 = %d\n", intVal);	
+-	//printf("[%s %d],mixedmode2 = 0x%02x\n", __FUNCTION__,__LINE__,intVal);	
+-	/*for detial mixed mode info*/ 
+-	
+-
++	// 1104	
+ 	if(band_select_5g2g!=2)		//  != dual band
+ 	{
+ 		intVal=1;
+Index: boa/system/sysconf.c
+===================================================================
+--- boa/system/sysconf.c	(revision 20709)
++++ boa/system/sysconf.c	(working copy)
+@@ -269,8 +269,11 @@
+ 			sprintf(wlanif, "wlan%d",i);
+ 			if(SetWlan_idx(wlanif))
+ 			{
+-				
++#if defined(CONFIG_RTL_92D_SUPPORT) && defined(CONFIG_RTL_92D_DMDP) && !defined(CONFIG_RTL_DUAL_PCIESLOT_BIWLAN_D)	
+ 				intVal = DMACDPHY;
++#else
++				intVal = SMACSPHY;
++#endif
+ 				apmib_set(MIB_WLAN_MAC_PHY_MODE, (void *)&intVal);
+ 				intVal = 0;
+ 				apmib_set(MIB_WLAN_WLAN_DISABLED, (void *)&intVal);
+Index: boa/src/fmwlan.c
+===================================================================
+--- boa/src/fmwlan.c	(revision 20709)
++++ boa/src/fmwlan.c	(working copy)
+@@ -2013,13 +2013,17 @@
+ 		if(SetWlan_idx(wlanif))
+ 		{
+ 			int intVal;
++#if defined(CONFIG_RTL_92D_SUPPORT) && defined(CONFIG_RTL_92D_DMDP) && !defined(CONFIG_RTL_DUAL_PCIESLOT_BIWLAN_D)
+ 			intVal = DMACDPHY;
++#else	
++			intVal = SMACSPHY;
++#endif
+ 			apmib_set(MIB_WLAN_MAC_PHY_MODE, (void *)&intVal);
+ 			intVal = 1;
+ 			apmib_set(MIB_WLAN_WLAN_DISABLED, (void *)&intVal);
+ 		}						
+ 	}
+-	
++
+ 	/* Set expect wireless interface is radio on and SMACSPHY */
+ 	if(wlanBand2G5GSelect == BANDMODE2G)
+ 	{
+@@ -2090,14 +2094,20 @@
+ 			if(SetWlan_idx(wlanif))
+ 			{
+ 				int intVal;
++#if defined(CONFIG_RTL_92D_SUPPORT) && defined(CONFIG_RTL_92D_DMDP) && !defined(CONFIG_RTL_DUAL_PCIESLOT_BIWLAN_D)
+ 				intVal = DMACDPHY;
++#else
++				intVal = SMACSPHY;
++#endif
+ 				apmib_set(MIB_WLAN_MAC_PHY_MODE, (void *)&intVal);
+ 				intVal = 0;
+ 				apmib_set(MIB_WLAN_WLAN_DISABLED, (void *)&intVal);
+ 			}
+ 		}
+ 				
+-		unsigned char wlanIfStr[10];				
++		unsigned char wlanIfStr[10];	
++		
++
+ 		wlanif = whichWlanIfIs(PHYBAND_5G);
+ 		
+ 		/* 92d rule, 5g must up in wlan0 */
+@@ -2106,6 +2116,7 @@
+ 		{
+ 			swapWlanMibSetting(0,1);			
+ 		}
++
+ 	}							
+ 	if(wlanBand2G5GSelect == BANDMODESINGLE)
+ 	{
+@@ -6988,25 +6999,16 @@
+ // When mixed mode, if no WPA2-AES, try to use WPA-AES or WPA2-TKIP
+ 		apmib_get(MIB_WLAN_WPA_CIPHER_SUITE, (void *)&encrypt1);
+ 		apmib_get(MIB_WLAN_WPA2_CIPHER_SUITE, (void *)&iVal);
+-		/*WPS2DOTX */		
+ 		if (!(iVal &	WPA_CIPHER_AES)) {
+-		
+ 			if (encrypt1 &	WPA_CIPHER_AES) {			
+-				//auth = WSC_AUTH_WPAPSK;
++				auth = WSC_AUTH_WPAPSK;
+ 				encrypt2 = WSC_ENCRYPT_AES;	
+-				//printf("%s %d : %d\n",__FUNCTION__,__LINE__ ,encrypt2);
+ 			}
+-			else{
++			else
+ 				encrypt2 = WSC_ENCRYPT_TKIP;	
+-				//printf("%s %d : %d\n",__FUNCTION__,__LINE__ ,encrypt2);
+-			}
+ 		}
+ //-------------------------------------------- david+2008-01-03
+-		if(encrypt1==WPA_CIPHER_AES && iVal ==WPA_CIPHER_AES){
+-			encrypt2 = WSC_ENCRYPT_AES;	
+-			printf("%s %d\n",__FUNCTION__,__LINE__);			
+-		}
+-		/*WPS2DOTX */				
++
+ 	}
+ 	apmib_set(MIB_WLAN_WSC_AUTH, (void *)&auth);
+ 	apmib_set(MIB_WLAN_WSC_ENC, (void *)&encrypt2);
+@@ -7194,8 +7196,6 @@
+ {
+ 	char *strVal, *submitUrl, *strResetUnCfg, *wlanIf;
+ 	char *targetAPSsid, *targetAPMac; /* WPS2DOTX */
+-	/*WPS2DOTX ;check if unlock button be clicked ; brute force attack */
+-	char  *unlockclicked;
+ 	int intVal;
+ 	char tmpbuf[200];
+ 	int mode;
+@@ -7342,17 +7342,6 @@
+ 	}
+ #endif //#if defined(UNIVERSAL_REPEATER) && defined(CONFIG_REPEATER_WPS_SUPPORT)
+ 
+-
+-	/*WPS2DOTX ;check if unlock button be clicked ; brute force attack */
+-	unlockclicked = req_get_cstream_var(wp, ("unlockautolockdown"), "");
+-	if(unlockclicked[0])
+-	{
+-		//printf("[%s %d]issue cmd:\"wscd -sig_unlock wlan0\" \n",__FUNCTION__,__LINE__);	
+-		system("wscd -sig_unlock wlan0");	
+-		OK_MSG2(UNLOCK_MSG, ((mode==AP_MODE) ? "client" : "AP"), submitUrl);	
+-		return;
+-	}
+-	/*WPS2DOTX ;check if unlock button be clicked ; brute force attack */
+ 	apmib_get(MIB_WLAN_MODE, (void *)&mode);	
+ 	strVal = req_get_cstream_var(wp, ("triggerPBC"), "");
+ 	if (strVal[0]) {
+@@ -7369,12 +7358,18 @@
+ 		}
+ 		else {		
+ #ifndef NO_ACTION	
+-		/*WPS2DOTX */		
+-				sprintf(tmpbuf, "%s -sig_pbc wlan%d", _WSC_DAEMON_PROG,wlan_idx);
++#if defined(FOR_DUAL_BAND)
++				if( (wlan0_mode == 0) && (wlan1_mode == 0) && (wlan0_disable == 0) && (wlan1_disable == 0))
++						sprintf(tmpbuf, "%s -sig_pbc %s", _WSC_DAEMON_PROG, "wlan0-wlan1");
++				else 
++						sprintf(tmpbuf, "%s -sig_pbc wlan%d", _WSC_DAEMON_PROG,wlan_idx);
+ 				system(tmpbuf);
++#else
+ 
+-		/*WPS2DOTX */		
++				sprintf(tmpbuf, "%s -sig_pbc wlan%d", _WSC_DAEMON_PROG,wlan_idx);
++				system(tmpbuf);
+ #endif
++#endif
+ 		}
+ 		OK_MSG2(START_PBC_MSG, ((mode==AP_MODE) ? "client" : "AP"), submitUrl);
+ 		return;
+Index: boa/src/fmmgmt.c
+===================================================================
+--- boa/src/fmmgmt.c	(revision 20709)
++++ boa/src/fmmgmt.c	(working copy)
+@@ -1995,22 +1995,25 @@
+ 			sprintf(wlanif, "wlan%d",i);
+ 			if(SetWlan_idx(wlanif))
+ 			{
+-				int intVal;
++				int intVal;	
++#if defined(CONFIG_RTL_92D_SUPPORT) && defined(CONFIG_RTL_92D_DMDP) && !defined(CONFIG_RTL_DUAL_PCIESLOT_BIWLAN_D)
+ 				intVal = DMACDPHY;
++#else
++				intVal = SMACSPHY;
++#endif
+ 				apmib_set(MIB_WLAN_MAC_PHY_MODE, (void *)&intVal);
+ 				intVal = 0;
+ 				apmib_set(MIB_WLAN_WLAN_DISABLED, (void *)&intVal);
+ 			}						
+ 		}
+-	
++		
+ 		/* 92d rule, 5g must up in wlan0 */
+ 		/* phybandcheck */
+ 		if(whichWlanIfIs(PHYBAND_5G) != 0)
+ 		{
+ 			swapWlanMibSetting(0,1);			
+ 		}
+-		
+-		
++
+ 	}
+ 	else if(wlBandMode == BANDMODESINGLE)
+ 	{
+@@ -2327,11 +2330,14 @@
+ 			if(SetWlan_idx(wlanif))
+ 			{
+ 				int intVal;
++#if defined(CONFIG_RTL_92D_SUPPORT) && defined(CONFIG_RTL_92D_DMDP) && !defined(CONFIG_RTL_DUAL_PCIESLOT_BIWLAN_D)
+ 				intVal = DMACDPHY;
++#else
++				intVal = SMACSPHY;
++#endif
+ 				apmib_set(MIB_WLAN_MAC_PHY_MODE, (void *)&intVal);				
+ 			}						
+ 		}
+-		
+ 		/* 92d rule, 5g must up in wlan0 */
+ 		/* phybandcheck */
+ 		if(whichWlanIfIs(PHYBAND_5G) != 0)
+Index: boa/src/fmget.c
+===================================================================
+--- boa/src/fmget.c	(revision 20709)
++++ boa/src/fmget.c	(working copy)
+@@ -4507,22 +4507,6 @@
+ #endif
+ 		return 0;
+ 	}
+-	else if ( !strcmp(name, "lockdown_stat")) {	/* WPS2DOTX for brute force attack mitigation;unlock*/
+-
+-		#define WSCD_LOCK_STAT		("/tmp/wscd_lock_stat")
+-
+-		struct stat lockdown_status;
+-		if (stat(WSCD_LOCK_STAT, &lockdown_status) == 0) {
+-			//printf("[%s %d] %s exist\n",__FUNCTION__,__LINE__,WSCD_LOCK_STAT);
+-			val=1;
+-		}else{
+-			val=0;
+-		}
+-		
+-		sprintf(buffer, "%d", val);
+-		req_format_write(wp, buffer);		
+-		return 0;
+-	}/* WPS2DOTX support*/
+ 	else if ( !strcmp(name, "iappDisabled")) {
+ 		if ( !apmib_get( MIB_WLAN_IAPP_DISABLED, (void *)&val) )
+ 			return -1;
+Index: boa/src/apform.h
+===================================================================
+--- boa/src/apform.h	(revision 20709)
++++ boa/src/apform.h	(working copy)
+@@ -262,9 +262,6 @@
+ 	"You have to run Wi-Fi Protected Setup within 2 minutes."
+ #define STOP_MSG \
+ 	"Applied WPS STOP successfully!<br>"	
+-/*for WPS2DOTX brute force attack , unlock*/
+-#define UNLOCK_MSG \
+-	"Applied WPS unlock successfully!<br>"	
+ #endif
+ 
+ 
+Index: boa/utils/flash.c
+===================================================================
+--- boa/utils/flash.c	(revision 20709)
++++ boa/utils/flash.c	(working copy)
+@@ -8627,28 +8627,11 @@
+ 	int wlan_chan_num=0, wsc_config_by_ext_reg=0;
+ 	int is_vxdif=0;
+ 
+-
+-
+-	int wlan0_wlan_disabled=0;	
+-	int wlan1_wlan_disabled=0;		
+-
+-	int wlan0_wsc_disabled=0;	
+-	int wlan1_wsc_disabled=0;		
+-
+-	/*for detial mixed mode info*/ 
+-#define WSC_WPA_TKIP		1
+-#define WSC_WPA_AES			2
+-#define WSC_WPA2_TKIP		4
+-#define WSC_WPA2_AES		8
+-
+-	int wlan0_encrypt=0;		
+-	int wlan0_wpa_cipher=0;
+-	int wlan0_wpa2_cipher=0;
+-
+-	int wlan1_encrypt=0;		
+-	int wlan1_wpa_cipher=0;
+-	int wlan1_wpa2_cipher=0;	
+-	/*for detial mixed mode info*/ 
++	// 1104	
++	int wlan0_wsc_disabled=0;
++#ifdef FOR_DUAL_BAND	
++	int wlan1_wsc_disabled=0;
++#endif
+ 	int band_select_5g2g;  // 0:2.4g  ; 1:5G   ; 2:both
+ 	
+ 	//printf("\r\n wlanif_name=[%s],__[%s-%u]\r\n",wlanif_name,__FILE__,__LINE__);	
+@@ -8677,17 +8660,14 @@
+ 	apmib_get(MIB_WLAN_CHANNEL, (void *)&wlan_chan_num);
+ 	apmib_get(MIB_DEVICE_NAME, (void *)&device_name);
+ 	apmib_get(MIB_DEVICE_NAME, (void *)&device_name);	
+-
++	// 1104
+ 	apmib_get(MIB_WLAN_BAND2G5G_SELECT, (void *)&band_select_5g2g);	
+ 	
+-	// must remove ; 2012-0201
+-	/*
++	
+ 	if(wlanif_name != NULL)
+ 	{
+ 		SetWlan_idx(wlanif_name);
+-	}	
+-	*/
+-
++	}
+ 	apmib_get(MIB_WLAN_WSC_AUTH, (void *)&wsc_auth);
+ 	apmib_get(MIB_WLAN_WSC_ENC, (void *)&wsc_enc);
+ 	apmib_get(MIB_WLAN_WSC_CONFIGURED, (void *)&is_config);
+@@ -8709,20 +8689,7 @@
+ 	apmib_get(MIB_WLAN_WEP128_KEY4, (void *)&wlan_wep128_key4);
+ 	apmib_get(MIB_WLAN_WPA_PSK, (void *)&wlan_wpa_psk);
+ 	apmib_get(MIB_WLAN_WSC_DISABLE, (void *)&wlan0_wsc_disabled);	// 1104
+-	apmib_get(MIB_WLAN_WLAN_DISABLED, (void *)&wlan0_wlan_disabled);	// 0908	
+-
+-	/*for detial mixed mode info*/ 
+-	apmib_get(MIB_WLAN_ENCRYPT, (void *)&wlan0_encrypt);
+-	apmib_get(MIB_WLAN_WPA_CIPHER_SUITE, (void *)&wlan0_wpa_cipher);
+-	apmib_get(MIB_WLAN_WPA2_CIPHER_SUITE, (void *)&wlan0_wpa2_cipher);
+-	/*for detial mixed mode info*/ 
+-
+-	/* for dual band*/ 	
+-	if(wlan0_wlan_disabled ){
+-
+-		wlan0_wsc_disabled=1 ; // if wlan0 interface is disabled ; 
+-	}
+-	/* for dual band*/ 	
++	
+ 		
+ 	if (genpin || !memcmp(wsc_pin, "\x0\x0\x0\x0\x0\x0\x0\x0", PIN_LEN)) {
+ 		#include <sys/time.h>			
+@@ -8819,27 +8786,6 @@
+ 	
+ 	WRITE_WSC_PARAM(ptr, tmpbuf, "encrypt_type = %d\n", wsc_enc);
+ 
+-	/*for detial mixed mode info*/ 
+-	intVal=0;	
+-	if(wlan0_encrypt==6){	// mixed mode
+-		if(wlan0_wpa_cipher==1){
+-			intVal |= WSC_WPA_TKIP;
+-		}else if(wlan0_wpa_cipher==2){
+-			intVal |= WSC_WPA_AES;		
+-		}else if(wlan0_wpa_cipher==3){
+-			intVal |= (WSC_WPA_TKIP | WSC_WPA_AES);		
+-		}
+-		if(wlan0_wpa2_cipher==1){
+-			intVal |= WSC_WPA2_TKIP;
+-		}else if(wlan0_wpa2_cipher==2){
+-			intVal |= WSC_WPA2_AES;		
+-		}else if(wlan0_wpa2_cipher==3){
+-			intVal |= (WSC_WPA2_TKIP | WSC_WPA2_AES);		
+-		}		
+-	}
+-	WRITE_WSC_PARAM(ptr, tmpbuf, "mixedmode = %d\n", intVal);	
+-	//printf("[%s %d],mixedmode = 0x%02x\n", __FUNCTION__,__LINE__,intVal);	
+-	/*for detial mixed mode info*/ 
+ 	if (wsc_enc == WSC_ENCRYPT_WEP)
+ 		is_wep = 1;
+ 
+@@ -8979,44 +8925,12 @@
+ 	apmib_get(MIB_WLAN_WEP128_KEY4, (void *)&wlan_wep128_key4);
+ 	apmib_get(MIB_WLAN_WPA_PSK, (void *)&wlan_wpa_psk);
+ 	apmib_get(MIB_WLAN_WSC_DISABLE, (void *)&wlan1_wsc_disabled);	// 1104
+-	apmib_get(MIB_WLAN_WLAN_DISABLED, (void *)&wlan1_wlan_disabled);	// 0908	
+-
+-	/*for detial mixed mode info*/ 
+-	apmib_get(MIB_WLAN_ENCRYPT, (void *)&wlan1_encrypt);
+-	apmib_get(MIB_WLAN_WPA_CIPHER_SUITE, (void *)&wlan1_wpa_cipher);
+-	apmib_get(MIB_WLAN_WPA2_CIPHER_SUITE, (void *)&wlan1_wpa2_cipher);
+-	/*for detial mixed mode info*/ 
+ 	
+-	
+-	/* for dual band*/ 	
+-	if(wlan1_wlan_disabled)
+-		wlan1_wsc_disabled = 1 ; // if wlan1 interface is disabled			
+-	/* for dual band*/ 		
+ 	WRITE_WSC_PARAM(ptr, tmpbuf, "#=====wlan1 start==========%d\n",intVal);
+ 	WRITE_WSC_PARAM(ptr, tmpbuf, "ssid2 = \"%s\"\n",wlan_ssid );	
+ 	WRITE_WSC_PARAM(ptr, tmpbuf, "auth_type2 = %d\n", wsc_auth);
+ 	WRITE_WSC_PARAM(ptr, tmpbuf, "encrypt_type2 = %d\n", wsc_enc);
+-	/*for detial mixed mode info*/ 
+-	intVal=0;	
+-	if(wlan1_encrypt==6){	// mixed mode
+-		if(wlan1_wpa_cipher==1){
+-			intVal |= WSC_WPA_TKIP;
+-		}else if(wlan1_wpa_cipher==2){
+-			intVal |= WSC_WPA_AES;		
+-		}else if(wlan1_wpa_cipher==3){
+-			intVal |= (WSC_WPA_TKIP | WSC_WPA_AES);		
+-		}
+-		if(wlan1_wpa2_cipher==1){
+-			intVal |= WSC_WPA2_TKIP;
+-		}else if(wlan1_wpa2_cipher==2){
+-			intVal |= WSC_WPA2_AES;		
+-		}else if(wlan1_wpa2_cipher==3){
+-			intVal |= (WSC_WPA2_TKIP | WSC_WPA2_AES);		
+-		}		
+-	}
+-	WRITE_WSC_PARAM(ptr, tmpbuf, "mixedmode2 = %d\n", intVal);	
+-	//printf("[%s %d],mixedmode2 = 0x%02x\n", __FUNCTION__,__LINE__,intVal);	
+-	/*for detial mixed mode info*/ 
++
+ 	// 1104	
+ 	if(band_select_5g2g!=2)		//  != dual band
+ 	{
+Index: boa/html/wlwps.htm
+===================================================================
+--- boa/html/wlwps.htm	(revision 20709)
++++ boa/html/wlwps.htm	(working copy)
+@@ -40,8 +40,6 @@
+ var mode_rpt=<% getIndex("wlanMode_rpt");%>; //AP_MODE=0, CLIENT_MODE=1, WDS_MODE=2, AP_WDS_MODE=3, AP_MPP_MODE=4, MPP_MODE=5, MAP_MODE=6, MP_MODE=7
+ var is_adhoc_rpt=<% getIndex("networkType_rpt");%>; //INFRASTRUCTURE=0, ADHOC=1
+ 
+-//WPS2DOTX for brute force attack unlock
+-var autolockdown_stat=<% getIndex("lockdown_stat");%>;
+ 
+ var warn_msg1='WPS was disabled automatically because wireless mode setting could not be supported. ' +
+ 				'You need go to Wireless/Basic page to modify settings to enable WPS.';
+@@ -56,12 +54,6 @@
+   	return true;
+ }
+ 
+-// WPS2DOTX , for brute force attack unlock
+-function unlockdownClicked()
+-{	
+-	return true;
+-}
+-
+ function triggerPINClicked()
+ {
+ 	return(saveChangesWPS(document.formWsc));	
+@@ -197,12 +189,6 @@
+ 
+ function checkWPSstate(form, isClientChk, isRptChk)
+ {
+-//WPS2DOTX for brute force attack unlock
+-	if (autolockdown_stat) {
+-		enableButton(form.elements["unlockautolockdown"]);		
+-	}else{
+-		disableButton(form.elements["unlockautolockdown"]);
+-	}  
+ 	if (disable_all) {
+ 		disableCheckBox(form.elements["disableWPS"]);
+ 		disableButton(form.elements["save"]);
+@@ -409,28 +395,7 @@
+ 	document.write("<table border=\"0\" width=500>\n");
+   }
+ </script>
+-
+-<!--WPS2DOTX for brute force attack unlock --> 
+ <tr>
+-  <td width="40%"><font size="2"><b>Auto-lock-down state:
+-<script>
+-  if (autolockdown_stat) {
+-	document.write("locked");
+-  }else{
+-	document.write("unlocked");  
+-  }
+-</script> 
+-  </b></font></td>    
+-  <td width="60%"><font size="2">  	
+-  	<input type="submit" value="Unlock" name="unlockautolockdown" onClick="return unlockdownClicked()">
+-	</font></td>  
+-</tr>
+-<script>
+-   checkWPSstate(document.formWsc, 0, 0);
+-</script>
+-<!--WPS2DOTX for brute force attack unlock --> 
+-
+-<tr>
+   <td width="40%"><font size="2"><b>Self-PIN Number:</b></font></td>
+   <td width="60%"><font size="2"><% getInfo("wscLoocalPin");%></td>
+ </tr>
+Index: openssl-0.9.8b/openssl.pc
+===================================================================
+--- openssl-0.9.8b/openssl.pc	(revision 0)
++++ openssl-0.9.8b/openssl.pc	(revision 0)
+@@ -0,0 +1,11 @@
++prefix=/usr/local/ssl
++exec_prefix=${prefix}
++libdir=${exec_prefix}/lib
++includedir=${prefix}/include
++
++Name: OpenSSL
++Description: Secure Sockets Layer and cryptography libraries and tools
++Version: 0.9.8b
++Requires: 
++Libs: -L${libdir} -lssl -lcrypto -ldl
++Cflags: -I${includedir} 
+Index: openssl-0.9.8b/libssl.so
+===================================================================
+--- openssl-0.9.8b/libssl.so	(revision 0)
++++ openssl-0.9.8b/libssl.so	(revision 0)
+@@ -0,0 +1 @@
++link libssl.so.0.9.8
+\ No newline at end of file
+
+Property changes on: openssl-0.9.8b/libssl.so
+___________________________________________________________________
+Added: svn:special
+   + *
+
+Index: openssl-0.9.8b/libssl.pc
+===================================================================
+--- openssl-0.9.8b/libssl.pc	(revision 0)
++++ openssl-0.9.8b/libssl.pc	(revision 0)
+@@ -0,0 +1,11 @@
++prefix=/usr/local/ssl
++exec_prefix=${prefix}
++libdir=${exec_prefix}/lib
++includedir=${prefix}/include
++
++Name: OpenSSL
++Description: Secure Sockets Layer and cryptography libraries
++Version: 0.9.8b
++Requires: 
++Libs: -L${libdir} -lssl -lcrypto -ldl
++Cflags: -I${includedir} 
+Index: openssl-0.9.8b/crypto/ecdsa/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/buildinf.h
+===================================================================
+--- openssl-0.9.8b/crypto/buildinf.h	(revision 0)
++++ openssl-0.9.8b/crypto/buildinf.h	(revision 0)
+@@ -0,0 +1,6 @@
++#ifndef MK1MF_BUILD
++  /* auto-generated by crypto/Makefile for crypto/cversion.c */
++  #define CFLAGS "mips-linux-gcc -fPIC -DOPENSSL_PIC -DOPENSSL_THREADS -D_REENTRANT -DDSO_DLFCN -DHAVE_DLFCN_H -DTERMIO -O3 -fomit-frame-pointer -Wall"
++  #define PLATFORM "mips-linux"
++  #define DATE "Fri Jun  5 14:42:13 CST 2009"
++#endif
+Index: openssl-0.9.8b/crypto/bf/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/objects/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/bn/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/idea/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/pkcs12/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/dsa/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/aes/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/buffer/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/ripemd/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/rsa/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/dso/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/pkcs7/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/store/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/comp/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/lhash/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/ecdh/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/stack/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/engine/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/x509v3/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/md2/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/txt_db/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/md4/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/conf/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/md5/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/err/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/evp/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/dh/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/asn1/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/krb5/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/pqueue/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/x509/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/bio/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/des/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/pem/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/rand/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/rc2/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/ec/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/rc4/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/cast/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/ocsp/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/hmac/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/sha/lib
+===================================================================
+Index: openssl-0.9.8b/crypto/ui/lib
+===================================================================
+Index: openssl-0.9.8b/libcrypto.so
+===================================================================
+--- openssl-0.9.8b/libcrypto.so	(revision 0)
++++ openssl-0.9.8b/libcrypto.so	(revision 0)
+@@ -0,0 +1 @@
++link libcrypto.so.0.9.8
+\ No newline at end of file
+
+Property changes on: openssl-0.9.8b/libcrypto.so
+___________________________________________________________________
+Added: svn:special
+   + *
+
+Index: openssl-0.9.8b/libcrypto.pc
+===================================================================
+--- openssl-0.9.8b/libcrypto.pc	(revision 0)
++++ openssl-0.9.8b/libcrypto.pc	(revision 0)
+@@ -0,0 +1,11 @@
++prefix=/usr/local/ssl
++exec_prefix=${prefix}
++libdir=${exec_prefix}/lib
++includedir=${prefix}/include
++
++Name: OpenSSL-libcrypto
++Description: OpenSSL cryptography library
++Version: 0.9.8b
++Requires: 
++Libs: -L${libdir} -lcrypto -ldl
++Cflags: -I${includedir} 
+Index: iptables-1.4.4/libipq/Makefile
+===================================================================
+--- iptables-1.4.4/libipq/Makefile	(revision 20709)
++++ iptables-1.4.4/libipq/Makefile	(working copy)
+@@ -83,15 +83,15 @@
+ ETAGS = etags
+ CTAGS = ctags
+ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+-ACLOCAL = ${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run aclocal-1.9
++ACLOCAL = ${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run aclocal-1.9
+ AMDEP_FALSE = #
+ AMDEP_TRUE = 
+-AMTAR = ${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run tar
++AMTAR = ${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run tar
+ AR = rsdk-linux-ar
+-AUTOCONF = ${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run autoconf
+-AUTOHEADER = ${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run autoheader
+-AUTOMAKE = ${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run automake-1.9
+-AWK = mawk
++AUTOCONF = ${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run autoconf
++AUTOHEADER = ${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run autoheader
++AUTOMAKE = ${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run automake-1.9
++AWK = gawk
+ CC = rsdk-linux-gcc
+ CCDEPMODE = depmode=gcc3
+ CFLAGS = -Os
+@@ -133,8 +133,8 @@
+ LIPO = 
+ LN_S = ln -s
+ LTLIBOBJS = 
+-MAKEINFO = ${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run makeinfo
+-NM = /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/bin/mips-linux-nm -B
++MAKEINFO = ${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run makeinfo
++NM = /home/quan_yang/jungle/zion_0310/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/bin/mips-linux-nm -B
+ NMEDIT = 
+ OBJDUMP = mips-linux-objdump
+ OBJEXT = o
+@@ -150,7 +150,7 @@
+ RANLIB = rsdk-linux-ranlib
+ SED = /bin/sed
+ SET_MAKE = 
+-SHELL = /bin/bash
++SHELL = /bin/sh
+ STRIP = rsdk-linux-strip
+ VERSION = 1.4.4
+ ac_ct_CC = 
+@@ -182,7 +182,7 @@
+ htmldir = ${docdir}
+ includedir = ${prefix}/include
+ infodir = ${datarootdir}/info
+-install_sh = /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/install-sh
++install_sh = /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/install-sh
+ kbuilddir = 
+ kinclude_CFLAGS =  -I ../../linux-2.6.30/include
+ ksourcedir = ../../linux-2.6.30
+Index: iptables-1.4.4/include/Makefile
+===================================================================
+--- iptables-1.4.4/include/Makefile	(revision 20709)
++++ iptables-1.4.4/include/Makefile	(working copy)
+@@ -69,15 +69,15 @@
+ ETAGS = etags
+ CTAGS = ctags
+ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+-ACLOCAL = ${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run aclocal-1.9
++ACLOCAL = ${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run aclocal-1.9
+ AMDEP_FALSE = #
+ AMDEP_TRUE = 
+-AMTAR = ${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run tar
++AMTAR = ${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run tar
+ AR = rsdk-linux-ar
+-AUTOCONF = ${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run autoconf
+-AUTOHEADER = ${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run autoheader
+-AUTOMAKE = ${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run automake-1.9
+-AWK = mawk
++AUTOCONF = ${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run autoconf
++AUTOHEADER = ${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run autoheader
++AUTOMAKE = ${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run automake-1.9
++AWK = gawk
+ CC = rsdk-linux-gcc
+ CCDEPMODE = depmode=gcc3
+ CFLAGS = -Os
+@@ -119,8 +119,8 @@
+ LIPO = 
+ LN_S = ln -s
+ LTLIBOBJS = 
+-MAKEINFO = ${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run makeinfo
+-NM = /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/bin/mips-linux-nm -B
++MAKEINFO = ${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run makeinfo
++NM = /home/quan_yang/jungle/zion_0310/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/bin/mips-linux-nm -B
+ NMEDIT = 
+ OBJDUMP = mips-linux-objdump
+ OBJEXT = o
+@@ -136,7 +136,7 @@
+ RANLIB = rsdk-linux-ranlib
+ SED = /bin/sed
+ SET_MAKE = 
+-SHELL = /bin/bash
++SHELL = /bin/sh
+ STRIP = rsdk-linux-strip
+ VERSION = 1.4.4
+ ac_ct_CC = 
+@@ -168,7 +168,7 @@
+ htmldir = ${docdir}
+ includedir = ${prefix}/include
+ infodir = ${datarootdir}/info
+-install_sh = /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/install-sh
++install_sh = /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/install-sh
+ kbuilddir = 
+ kinclude_CFLAGS =  -I ../../linux-2.6.30/include
+ ksourcedir = ../../linux-2.6.30
+Index: iptables-1.4.4/config.status
+===================================================================
+--- iptables-1.4.4/config.status	(revision 20709)
++++ iptables-1.4.4/config.status	(working copy)
+@@ -1,4 +1,4 @@
+-#! /bin/bash
++#! /bin/sh
+ # Generated by configure.
+ # Run this file to recreate the current configuration.
+ # Compiler output produced by configure, useful for debugging
+@@ -7,7 +7,7 @@
+ debug=false
+ ac_cs_recheck=false
+ ac_cs_silent=false
+-SHELL=${CONFIG_SHELL-/bin/bash}
++SHELL=${CONFIG_SHELL-/bin/sh}
+ ## --------------------- ##
+ ## M4sh Initialization.  ##
+ ## --------------------- ##
+@@ -363,10 +363,10 @@
+ This config.status script is free software; the Free Software Foundation
+ gives unlimited permission to copy, distribute and modify it."
+ 
+-ac_pwd='/mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4'
++ac_pwd='/home/quan_yang/jungle/zion_0310/users/iptables-1.4.4'
+ srcdir='.'
+ INSTALL='/usr/bin/install -c'
+-AWK='mawk'
++AWK='gawk'
+ test -n "$AWK" || AWK=awk
+ # The default lists apply if the user does not specify any file.
+ ac_need_defaults=:
+@@ -438,10 +438,10 @@
+ fi
+ 
+ if $ac_cs_recheck; then
+-  set X '/bin/bash' './configure'  '--host=mips-linux' '--with-ksource=../../linux-2.6.30' '--enable-static' '--disable-shared' '--disable-ipv6' 'CFLAGS=-Os' 'host_alias=mips-linux' 'CC=rsdk-linux-gcc' $ac_configure_extra_args --no-create --no-recursion
++  set X '/bin/sh' './configure'  '--host=mips-linux' '--with-ksource=../../linux-2.6.30' '--enable-static' '--disable-shared' '--disable-ipv6' 'CFLAGS=-Os' 'host_alias=mips-linux' 'CC=rsdk-linux-gcc' $ac_configure_extra_args --no-create --no-recursion
+   shift
+-  $as_echo "running CONFIG_SHELL=/bin/bash $*" >&6
+-  CONFIG_SHELL='/bin/bash'
++  $as_echo "running CONFIG_SHELL=/bin/sh $*" >&6
++  CONFIG_SHELL='/bin/sh'
+   export CONFIG_SHELL
+   exec "$@"
+ fi
+@@ -486,9 +486,9 @@
+ EGREP='/bin/grep -E'
+ FGREP='/bin/grep -F'
+ LD='rsdk-linux-gcc'
+-NM='/mnt/sda6/rtl819x-sdk-v2.x/rtl819x/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/bin/mips-linux-nm -B'
++NM='/home/quan_yang/jungle/zion_0310/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/bin/mips-linux-nm -B'
+ LN_S='ln -s'
+-max_cmd_len='805306365'
++max_cmd_len='98304'
+ ac_objext='o'
+ exeext=''
+ lt_unset='unset'
+@@ -515,7 +515,7 @@
+ lt_cv_sys_global_symbol_to_c_name_address='sed -n -e '\''s/^: \([^ ]*\) $/  {\"\1\", (void *) 0},/p'\'' -e '\''s/^[ABCDGIRSTW]* \([^ ]*\) \([^ ]*\)$/  {"\2", (void *) \&\2},/p'\'''
+ lt_cv_sys_global_symbol_to_c_name_address_lib_prefix='sed -n -e '\''s/^: \([^ ]*\) $/  {\"\1\", (void *) 0},/p'\'' -e '\''s/^[ABCDGIRSTW]* \([^ ]*\) \(lib[^ ]*\)$/  {"\2", (void *) \&\2},/p'\'' -e '\''s/^[ABCDGIRSTW]* \([^ ]*\) \([^ ]*\)$/  {"lib\2", (void *) \&\2},/p'\'''
+ objdir='.libs'
+-SHELL='/bin/bash'
++SHELL='/bin/sh'
+ ECHO='echo'
+ MAGIC_CMD='file'
+ lt_prog_compiler_no_builtin_flag=' -fno-builtin'
+@@ -578,8 +578,8 @@
+ finish_cmds='PATH="\$PATH:/sbin" ldconfig -n $libdir'
+ finish_eval=''
+ hardcode_into_libs='yes'
+-sys_lib_search_path_spec='/mnt/sda6/rtl819x-sdk-v2.x/rtl819x/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/lib/gcc/mips-linux/3.4.6-1.3.6/4181 /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/lib/gcc /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/mips-linux/lib'
+-sys_lib_dlsearch_path_spec='/lib /usr/lib /usr/lib/mesa /lib/i386-linux-gnu /usr/lib/i386-linux-gnu /lib/i686-linux-gnu /usr/lib/i686-linux-gnu /usr/lib/alsa-lib /usr/local/lib '
++sys_lib_search_path_spec='/home/quan_yang/jungle/zion_0310/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/lib/gcc/mips-linux/3.4.6-1.3.6/4181 /home/quan_yang/jungle/zion_0310/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/lib/gcc /home/quan_yang/jungle/zion_0310/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/mips-linux/lib'
++sys_lib_dlsearch_path_spec='/lib /usr/lib /usr/lib/qt-3.3/lib '
+ hardcode_action='unsupported'
+ enable_dlopen='unknown'
+ enable_dlopen_self='unknown'
+@@ -757,7 +757,7 @@
+ S["AR"]="rsdk-linux-ar"
+ S["OBJDUMP"]="mips-linux-objdump"
+ S["LN_S"]="ln -s"
+-S["NM"]="/mnt/sda6/rtl819x-sdk-v2.x/rtl819x/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/bin/mips-linux-nm -B"
++S["NM"]="/home/quan_yang/jungle/zion_0310/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/bin/mips-linux-nm -B"
+ S["ac_ct_DUMPBIN"]=""
+ S["DUMPBIN"]=""
+ S["LD"]="rsdk-linux-gcc"
+@@ -792,19 +792,19 @@
+ S["CC"]="rsdk-linux-gcc"
+ S["am__untar"]="${AMTAR} xf -"
+ S["am__tar"]="${AMTAR} chof - \"$$tardir\""
+-S["AMTAR"]="${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run tar"
++S["AMTAR"]="${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run tar"
+ S["am__leading_dot"]="."
+ S["SET_MAKE"]=""
+-S["AWK"]="mawk"
++S["AWK"]="gawk"
+ S["mkdir_p"]="mkdir -p --"
+ S["INSTALL_STRIP_PROGRAM"]="${SHELL} $(install_sh) -c -s"
+ S["STRIP"]="rsdk-linux-strip"
+-S["install_sh"]="/mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/install-sh"
+-S["MAKEINFO"]="${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run makeinfo"
+-S["AUTOHEADER"]="${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run autoheader"
+-S["AUTOMAKE"]="${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run automake-1.9"
+-S["AUTOCONF"]="${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run autoconf"
+-S["ACLOCAL"]="${SHELL} /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/users/iptables-1.4.4/missing --run aclocal-1.9"
++S["install_sh"]="/home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/install-sh"
++S["MAKEINFO"]="${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run makeinfo"
++S["AUTOHEADER"]="${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run autoheader"
++S["AUTOMAKE"]="${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run automake-1.9"
++S["AUTOCONF"]="${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run autoconf"
++S["ACLOCAL"]="${SHELL} /home/quan_yang/jungle/zion_0310/users/iptables-1.4.4/missing --run aclocal-1.9"
+ S["VERSION"]="1.4.4"
+ S["PACKAGE"]="iptables"
+ S["CYGPATH_W"]="echo"
+@@ -847,7 +847,7 @@
+ S["PACKAGE_TARNAME"]="iptables"
+ S["PACKAGE_NAME"]="iptables"
+ S["PATH_SEPARATOR"]=":"
+-S["SHELL"]="/bin/bash"
++S["SHELL"]="/bin/sh"
+ _ACAWK
+ cat >>"$tmp/subs1.awk" <<_ACAWK &&
+   for (key in S) S_is_set[key] = 1
+Index: iptables-1.4.4/libtool
+===================================================================
+--- iptables-1.4.4/libtool	(revision 20709)
++++ iptables-1.4.4/libtool	(working copy)
+@@ -1,8 +1,8 @@
+-#! /bin/bash
++#! /bin/sh
+ 
+ # libtool - Provide generalized library-building support services.
+ # Generated automatically by config.status (iptables) 1.4.4
+-# Libtool was configured on host wangting-desktop:
++# Libtool was configured on host APServer197:
+ # NOTE: Changes made to this file will be lost: look at ltmain.sh.
+ #
+ #   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005,
+@@ -80,13 +80,13 @@
+ FGREP="/bin/grep -F"
+ 
+ # A BSD- or MS-compatible name lister.
+-NM="/mnt/sda6/rtl819x-sdk-v2.x/rtl819x/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/bin/mips-linux-nm -B"
++NM="/home/quan_yang/jungle/zion_0310/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/bin/mips-linux-nm -B"
+ 
+ # Whether we need soft or hard links.
+ LN_S="ln -s"
+ 
+ # What is the maximum length of a command?
+-max_cmd_len=805306365
++max_cmd_len=98304
+ 
+ # Object file suffix (normally "o").
+ objext=o
+@@ -150,7 +150,7 @@
+ objdir=.libs
+ 
+ # Shell to use when invoking shell scripts.
+-SHELL="/bin/bash"
++SHELL="/bin/sh"
+ 
+ # An echo program that does not interpret backslashes.
+ ECHO="echo"
+@@ -234,10 +234,10 @@
+ hardcode_into_libs=yes
+ 
+ # Compile-time system search path for libraries.
+-sys_lib_search_path_spec="/mnt/sda6/rtl819x-sdk-v2.x/rtl819x/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/lib/gcc/mips-linux/3.4.6-1.3.6/4181 /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/lib/gcc /mnt/sda6/rtl819x-sdk-v2.x/rtl819x/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/mips-linux/lib"
++sys_lib_search_path_spec="/home/quan_yang/jungle/zion_0310/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/lib/gcc/mips-linux/3.4.6-1.3.6/4181 /home/quan_yang/jungle/zion_0310/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/lib/gcc /home/quan_yang/jungle/zion_0310/toolchain/rsdk-1.3.6-4181-EB-2.6.30-0.9.30/mips-linux/lib"
+ 
+ # Run-time system search path for libraries.
+-sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib/mesa /lib/i386-linux-gnu /usr/lib/i386-linux-gnu /lib/i686-linux-gnu /usr/lib/i686-linux-gnu /usr/lib/alsa-lib /usr/local/lib "
++sys_lib_dlsearch_path_spec="/lib /usr/lib /usr/lib/qt-3.3/lib "
+ 
+ # Whether dlopen is supported.
+ dlopen_support=unknown
+Index: wsc/src/wscd_5281
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream
+Index: wsc/src/wsc.h
+===================================================================
+--- wsc/src/wsc.h	(revision 20709)
++++ wsc/src/wsc.h	(working copy)
+@@ -32,8 +32,6 @@
+ 
+ #define CONNECT_PROXY_AP //_Eric add for wps_pin method to connect to wps proxy-ap
+ 
+-
+-//auto decision at Makefile
+ #ifndef FOR_DUAL_BAND
+ #define FOR_DUAL_BAND
+ #endif
+@@ -247,19 +245,17 @@
+ 
+ /*==========================================================*/
+ 
+-#define AUTO_LOCK_DOWN	// must under WPS2X
+-#ifdef AUTO_LOCK_DOWN
+-// for brute froce attack mitigation after SPEC 2.0.2
+-#define ALD_BRUTEFORCE_ATTACK_MITIGATION
+-#endif
++#define AUTO_LOCK_DOWN	// for WPS2X
++/*==========================Customization======================================*/
+ 
+-
+-/*=======Customization=========================*/
+ //#define CBN_SPEC
+ #ifdef CBN_SPEC
+ #define REINIT_VIA_RELOAD_DAEMON
+ #endif
++
++
+ #ifdef DET_WPS_SPEC
++
+ 	#define AUTO_LOCK_DOWN
+ 	//#define	DET_WPS_SPEC_DEBUG
+ 	//#define NO_IWCONTROL
+@@ -275,13 +271,20 @@
+ #define DET_DEBUG(fmt, args...)
+ #endif // DEBUG
+ 
+-//#define SER_AP_SPEC
+-
++/*===for Dlink WPS support repeater mode======*/
+ //#define CONFIG_RTL8186_KLD_REPEATER
+ //#define CONFIG_RTL865x_KLD_REPEATER
+ //#define CONFIG_CMO
+ 
++/*============================================*/
+ 
++/*==========================Customization======================================*/
++
++
++
++
++/*================================================================*/
++/* Package dependent define */
+ #ifdef CONFIG_RTL8186_KB
+ 	#define NO_IWCONTROL
+ 	#define WSC_1SEC_TIMER
+@@ -293,24 +296,8 @@
+ 	#endif		
+ #endif
+ 
+-/*============Customization====================*/
+ 
+-//#define CLIENT_ONLY
+-#ifdef CLIENT_ONLY
+-//#undef SUPPORT_REGISTRAR
+-//#undef BLOCKED_ROGUE_STA
+-#undef SUPPORT_UPNP
+-#undef PREVENT_PROBE_DEADLOCK
+-#undef USE_MUTEX
+-#undef USE_MINI_UPNP
+-#ifdef FOR_DUAL_BAND
+-#undef FOR_DUAL_BAND
+-#endif
+ 
+-#define NO_IWCONTROL
+-#define WSC_1SEC_TIMER
+-#endif
+-
+ /* Include Files */
+ #include <stdlib.h>
+ #include <stdio.h>
+@@ -404,12 +391,7 @@
+ /* Constant Definitions */
+ 
+ #define PROGRAM_NAME				"wscd"
+-#ifdef WPS2DOTX
+-#define VERSION_STR					"v2.9-wps2.0"
+-#else
+-#define VERSION_STR					"v2.9-wps1.0"
+-#endif
+-
++#define VERSION_STR					"v2.3"
+ #define DEFAULT_CONFIG_FILENAME		("/var/"PROGRAM_NAME".conf")
+ #define DEFAULT_PID_FILENAME		("/var/run/"PROGRAM_NAME)
+ #ifdef CONFIG_IWPRIV_INTF
+@@ -433,10 +415,6 @@
+ #define WSCD_LAST_SUCCESS_ENROLLEE	("/tmp/wscd_enrollee")	// 2011-0830 ; add for recored last success enrollee
+ 
+ 
+-#define WSCD_IND_ONLY_INTERFACE0  ("/var/wps_start_interface0")
+-#define WSCD_IND_ONLY_INTERFACE1  ("/var/wps_start_interface1")
+-
+-
+ #ifdef INBAND_WPS_OVER_HOST
+ #define HOST_MII_INTF "br0"
+ #endif
+@@ -530,34 +508,29 @@
+ #ifdef CONFIG_IWPRIV_INTF
+ #define RESET_WAIT_TIME				30 // in sec
+ #endif
+-
+-
+ #ifdef	AUTO_LOCK_DOWN
++/*if in "AUTH_FAIL_TIME_TH" occur 
++  "AUTH_FAIL_TIMES"  M2468 fail then as be attacked*/ 
+ 
+-#ifdef ALD_BRUTEFORCE_ATTACK_MITIGATION	
+-#define ALD_INDEFINITE_TH	10
++#ifdef WPS2DOTX
++ // wps2x 
++#define AUTH_FAIL_TIMES   	3		    // auth fail 	times
++#define AUTH_FAIL_TIME_TH	60		    // in sec
++#define AUTO_LOCKED_DOWN_TIME	60		// in sec
++#else
++/*	below is for DNI used */
++#define AUTH_FAIL_TIMES   	30		    // auth fail 	times
++#define AUTH_FAIL_TIME_TH	300		    // in sec
++#define AUTO_LOCKED_DOWN_TIME	300		// in sec
+ #endif
+ 
+-#define AUTH_FAIL_TIMES   	3
+-#define AUTH_FAIL_TIME_TH	60
+-#define AUTO_LOCKED_DOWN_TIME	60
+-//#define AUTO_LOCKED_DOWN_TIME	20		// for test
+ 
+-
+-#ifdef DET_WPS_SPEC
+-#define AUTH_FAIL_TIMES   	30
+-#define AUTH_FAIL_TIME_TH	300    
+-#define AUTO_LOCKED_DOWN_TIME	300	
+ #endif
+-
+-
+-#endif
+ #define SETSELREG_WALK_TIME		120 // in sec
+ #define SESSION_OVERLAP_TIME		(pCtx->PBC_overlapping_LED_time_out)
+ #define WAIT_REBOOT_TIME			3
+-
+-#define IS_UPNP_CONTROL_POINT		0x8000000
+ #ifdef SUPPORT_UPNP
++#define IS_UPNP_CONTROL_POINT		0x8000000
+ #ifdef PREVENT_PROBE_DEADLOCK
+ #define MAX_WSC_PROBE_STA			10
+ #define PROBE_EXPIRED				10
+@@ -918,7 +891,7 @@
+ enum { 
+ 		MODE_AP_UNCONFIG=1, 			// AP unconfigured (enrollee)
+ 		MODE_CLIENT_UNCONFIG=2, 		// client unconfigured (enrollee) 
+-		MODE_CLIENT_CONFIG=3,			// client configured (External registrar) 
++		MODE_CLIENT_CONFIG=3,			// client configured (registrar) 
+ 		MODE_AP_PROXY=4, 				// AP configured (proxy)
+ 		MODE_AP_PROXY_REGISTRAR=5,		// AP configured (proxy and registrar)
+ 		MODE_CLIENT_UNCONFIG_REGISTRAR=6		// client unconfigured (registrar)
+@@ -1025,12 +998,6 @@
+ #endif
+ 
+ 
+-#define WSC_WPA_TKIP		1
+-#define WSC_WPA_AES			2
+-#define WSC_WPA2_TKIP		4
+-#define WSC_WPA2_AES		8
+-
+-
+ enum { wsc_mode, wsc_upnp, wsc_config_methods, wsc_auth_type, 
+         wsc_encrypt, wsc_connection_type, wsc_manual, wsc_key,
+         wsc_ssid, wsc_pin_code, wsc_rf_band, wsc_device_name
+@@ -1424,10 +1391,9 @@
+ 	int wsc_p2p_mode;	
+ 	int p2p_trigger_type;	
+ #endif
+-
++#ifdef FOR_DUAL_BAND
+ 	int wlan0_wsc_disabled;/* FOR_DUAL_BAND  */
+ 	int wlan1_wsc_disabled;/* FOR_DUAL_BAND  */
+-#ifdef FOR_DUAL_BAND
+ 	int socket2;
+ 	char wlan_interface_name2[40];
+ 	int InterFaceComeIn;
+@@ -1438,11 +1404,7 @@
+ 	int auth_type_flash2;	
+ 	int encrypt_type2;		
+ 	int encrypt_type_flash2;
+-	int mixedmode2;	
+ 	int fifo2;
+-	
+-	unsigned char inter0only;
+-	unsigned char inter1only;
+ #endif	
+ 
+ 	int both_band_ap;
+@@ -1455,7 +1417,10 @@
+ 	int STAmodeNegoWith;	
+ 	
+ #ifdef WPS2DOTX
++
+ 		unsigned char authorized_macs[MAX_AUTHORIZED_MACS][ETHER_ADDRLEN];
++		int is_v2_mess;
++
+ 		/*for process EAP Fragment*/
+ 		int EAP_frag_threshold;
+ 		//int origeMgsSize;
+@@ -1493,14 +1458,23 @@
+ 	char SSID[MAX_SSID_LEN+1];	
+ 
+ 	int auth_type;
++
++
+ 	int auth_type_flags;	
+ 	int auth_type_flash;
++
+ 	int encrypt_type;
+-	int mixedmode;
++
++
++
++
++	
+ 	int rf_band;	
+ 	
+ 	int encrypt_type_flags;	
+ 	int encrypt_type_flash;
++
++
+ 	
+ 	int connect_type;
+ 	int manual_config;
+@@ -1541,7 +1515,7 @@
+ 	unsigned char upnp_wait_reboot_timeout;
+ 	STA_CTX cached_sta;
+ 	unsigned char ERisDTM;
+-#ifdef	USE_MINI_UPNP
++#ifdef USE_MINI_UPNP
+ 	mini_upnp_CTX_T upnp_info;
+ #endif
+ #endif
+@@ -1558,7 +1532,7 @@
+ 	int connect_fail;
+ 	int connect_method;
+ 	unsigned long start_time;
+-	//int wait_assoc_ind;
++	//int wait_assoc_ind;// bug fixed
+ 	int STAmodeSuccess;
+ 	SS_STATUS_T ss_status;
+ 	SS_IE_T ss_ie;
+@@ -1675,21 +1649,16 @@
+ #ifdef	AUTO_LOCK_DOWN
+ 	/*at auto_lock_down time PIN will be disabled 
+ 	that is mean "don't accept configurated from external registrar"*/
+-	
+-
+ 	int auto_lock_down ; 
+ 
+-#ifdef ALD_BRUTEFORCE_ATTACK_MITIGATION	
+-	int ADL_pin_attack_count;
+-	int MaxPinFailThresHold;
+-#else
+ 	int ald_virgin ;
+ 	time_t ald_timestamp[AUTH_FAIL_TIMES];//ald_authfail_timestamp
++	int real_auth_fail_times;
+ 	int ald_h;	// head
+ 	int ald_t;	// tail
+-#endif	
+ #endif
+ 
++
+ #if defined(DET_WPS_SPEC) || defined(CONFIG_IWPRIV_INTF) 
+ 
+ 	int current_config_mode;
+@@ -1713,7 +1682,6 @@
+ 	unsigned char BackupTagAPBSSID[6];
+ 	unsigned char waitReScanMode;	
+ #endif
+-	unsigned char ProfileDontBothApply;
+ } CTX_T, *CTX_Tp;
+ 
+ #pragma pack(pop)
+@@ -1761,6 +1729,8 @@
+ extern int init_wlan(CTX_Tp pCtx, int reinit);
+ #ifdef AUTO_LOCK_DOWN
+ extern void InOut_auto_lock_down(CTX_Tp pCtx , int enter);
++extern int update_ie(CTX_Tp pCtx, int type);
++extern int update_ie2(CTX_Tp pCtx, int type);
+ #endif
+ #ifdef CLIENT_MODE
+ extern int issue_scan_req(CTX_Tp pCtx, int method);
+@@ -1947,9 +1917,5 @@
+ //extern unsigned char cmdstring[80];
+ #endif
+ 
+-
+-extern void show_auth_encry_help(void);
+-
+-
+ #endif // INCLUDE_WSC_H
+ 
+Index: wsc/src/wscd.conf
+===================================================================
+--- wsc/src/wscd.conf	(revision 20709)
++++ wsc/src/wscd.conf	(working copy)
+@@ -80,18 +80,13 @@
+ 
+ button_hold_time = 1
+ 
+-# for WPS2;if wps1.0 don't define
++# Enable the fix for Windows-Zero-Config WEP issue
++fix_wzc_wep = 0
++
++#for 92D concurrent mode, there are two wlan interfaces, we can use this parameter to select one interface to do WPS
++#if botton_hold_time_for_wlan0 <= 5, do trigger to wlan0, if botton_hold_time_for_wlan0 >5, do trigger to wlan1.
++#if wlan0 and wlan1 are both on AP mode, we don't care this parameter.
++button_hold_time_for_first_if = 5
++# for WPS2;if wps1.0 don't define 
+ # 0x2008|0x480|0x680(CONFIG_METHOD_VIRTUAL_PIN | CONFIG_METHOD_PHYSICAL_PBC | CONFIG_METHOD_VIRTUAL_PBC )
+ config_method =  9864
+-#if AP mode config by EAP-base ER or auto-generate
+-#but want not apply to both band then preset the paramater to 1
+-#ProfileDontBothApply = 1
+-
+-# value=2:deny whatever config or unconfig state.
+-# value=1:deny under configured state, allow when unconfig state.
+-#disable_configured_by_exReg = 1
+-
+-#when PIN failed number >= MaxPinFailThresHold AP will indefinitely auto-lock-down 
+-#until user intervenes to unlock ; vaild value 1~10
+-#MaxPinFailThresHold = 10
+-
+Index: wsc/src/wscd_4181
+===================================================================
+Cannot display: file marked as a binary type.
+svn:mime-type = application/octet-stream

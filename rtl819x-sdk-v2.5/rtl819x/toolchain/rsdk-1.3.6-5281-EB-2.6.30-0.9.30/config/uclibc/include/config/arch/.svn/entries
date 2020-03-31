@@ -1,0 +1,80 @@
+10
+
+dir
+19927
+svn://192.168.2.163/rtl8196b_11n/trunk/netcore_2.x_spi/rtl819x/toolchain/rsdk-1.3.6-5281-EB-2.6.30-0.9.30/config/uclibc/include/config/arch
+svn://192.168.2.163/rtl8196b_11n
+
+
+
+2011-09-14T08:53:43.553467Z
+10147
+linxiaobin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5573724e-50af-47a2-85db-7cc79d6d1019
+
+big
+dir
+
+cflags.h
+file
+
+
+
+
+2012-01-18T13:33:42.000000Z
+d41d8cd98f00b204e9800998ecf8427e
+2011-09-14T08:53:43.553467Z
+10147
+linxiaobin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0
+
+any
+dir
+
+has
+dir
+
+use
+dir
+
+wants
+dir
+
+little
+dir
+

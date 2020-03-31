@@ -1,0 +1,489 @@
+10
+
+dir
+22227
+svn://192.168.2.163/rtl8196b_11n/trunk/sdk-store/rtl819x-sdk-v2.5/rtl819x/users
+svn://192.168.2.163/rtl8196b_11n
+
+
+
+2012-02-07T06:54:26.024188Z
+11780
+wangting
+
+
+
+
+
+
+
+
+
+
+
+
+
+incomplete
+5573724e-50af-47a2-85db-7cc79d6d1019
+
+dhrystone
+dir
+
+wide-dhcpv6
+dir
+
+wapi_utils
+dir
+
+hub-ctrl
+dir
+
+goahead-2.1.1
+dir
+
+usb-modeswitch-data-20100623
+dir
+
+ntpclient
+dir
+
+boa
+dir
+
+wireless_tools.25
+dir
+
+udhcp-0.9.9-pre
+dir
+
+ppp-2.4.4
+dir
+
+lltdd
+dir
+
+usb-modeswitch-data
+file
+17442
+
+
+
+2013-11-10T13:34:49.000000Z
+1979457751be9da428967e9c22a71ad8
+2011-09-14T07:38:54.782511Z
+10143
+linxiaobin
+has-props
+
+
+svn:special
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+29
+
+rc
+dir
+
+samba-3.0.24
+dir
+
+wireless_tools.29
+dir
+
+hcm
+dir
+
+Makefile
+file
+17442
+
+
+
+2013-11-10T13:34:57.000000Z
+16129a738c2949fa6084a380448f2d90
+2011-11-16T06:09:33.603882Z
+10865
+linxiaobin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9396
+
+nfbi
+dir
+
+ntfs-3g-2010.10.2
+dir
+
+inband_lib
+dir
+
+hostapd-0.6.10
+dir
+
+l2tpd
+dir
+
+dnsmasq-2.33
+dir
+
+hostapd_slave
+dir
+
+lzma465
+dir
+
+mnet
+dir
+
+mbpk_eject
+dir
+
+net-snmp-5.4.1
+dir
+
+samba-3.0.37
+dir
+
+mp-daemon
+dir
+
+Kconfig
+file
+17442
+
+
+
+2013-11-10T13:34:57.000000Z
+86645d79fe23ffe254b941430223cbad
+2011-10-25T06:37:26.592054Z
+10643
+linxiaobin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+7396
+
+miniigd
+dir
+
+dlna_dms
+dir
+
+flex-2.5.33
+dir
+
+Kconfig.mk
+file
+17442
+
+
+
+2013-11-10T13:34:57.000000Z
+fbd4f56a16128de861990d94c5e6cca8
+2011-09-14T07:38:54.782511Z
+10143
+linxiaobin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+531
+
+pptp-1.7.2
+dir
+
+IAPP
+dir
+
+usb-modeswitch-1.1.3
+dir
+
+updatedd-2.5
+dir
+
+usb-modeswitch
+file
+17442
+
+
+
+2013-11-10T13:34:57.000000Z
+96cb3ac5d30e3d8c96aa72390e94b9f2
+2011-09-14T07:38:54.782511Z
+10143
+linxiaobin
+has-props
+
+
+svn:special
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+21
+
+libusb-0.1.12
+dir
+
+libnl-1.1
+dir
+
+igmpproxy
+dir
+
+ltp
+dir
+
+openssl-0.9.8b
+dir
+
+.config.old
+file
+17442
+
+
+
+2014-03-02T16:18:03.000000Z
+a94fb1d33f03db5f318aa2163bc12e81
+2011-10-25T05:48:36.486410Z
+10639
+linxiaobin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2264
+
+auth
+dir
+
+routed
+dir
+
+rtk_inbandLib
+dir
+
+iptables-1.4.4
+dir
+
+vsftpd-2.3.2
+dir
+
+dnrd-2.12.1
+dir
+
+rtk_inbandHost
+dir
+
+busybox-1.13
+dir
+
+squashfs4.0
+dir
+
+.config
+file
+17442
+
+
+
+2013-12-01T13:05:06.000000Z
+bc3d8842a8cb9eb414e0e4ea51d31873
+2011-11-16T06:09:33.603882Z
+10865
+linxiaobin
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2260
+
+orayddns
+dir
+
+rtk_cmd
+dir
+
+bridge-utils
+dir
+
+comgt.0.32
+dir
+
+busybox
+file
+17442
+
+
+
+2014-03-02T16:16:27.000000Z
+9b944ab19ca15e5009fd7187f33a8359
+2011-09-14T07:38:54.782511Z
+10143
+linxiaobin
+has-props
+
+
+svn:special
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+12
+
+wsc
+dir
+
+gdb
+dir
+
+mini_upnp
+dir
+
+usbutils-0.86
+dir
+
+iproute2-2.6.29-1
+dir
+
+radvd-0.9.1
+dir
+
+script
+dir
+
+usbmount
+dir
+
+dosfstools-2.11
+dir
+
